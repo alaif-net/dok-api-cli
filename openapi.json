@@ -1,0 +1,2119 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "高火力 DOK APIドキュメント",
+    "description": "- - -\n\n# はじめに\n\n「[高火力 DOK](https://www.sakura.ad.jp/koukaryoku-dok)」が提供するAPIの利用方法を公開しています。  \n「高火力 DOK」自体の説明については[マニュアル](https://manual.sakura.ad.jp/cloud/manual-koukaryoku-container.html)をご覧ください。\n\n# APIご利用の前に\n\n本APIの利用には、さくらのクラウドの **APIキー** が必要です。  \nAPIキーの発行については[マニュアル](https://manual.sakura.ad.jp/cloud/api/apikey.html)をご覧ください。\n\nAPIキーの「アクセストークン」をユーザーID、「アクセストークンシークレット」をパスワードとした **Basic認証** で本APIをご利用ください。\n\n- - -\n",
+    "version": "1.0.0",
+    "contact": {
+      "name": "SAKURA internet Inc."
+    },
+    "license": {
+      "name": "CC BY-ND-4.0 (Creative Commons Attribution No Derivatives 4.0 International)",
+      "url": "https://spdx.org/licenses/CC-BY-ND-4.0.html"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://secure.sakura.ad.jp/cloud/zone/is1a/api/managed-container/1.0"
+    }
+  ],
+  "security": [
+    {
+      "BasicAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "認証",
+      "description": "認証関連のAPIです。"
+    },
+    {
+      "name": "コンテナーレジストリー",
+      "description": "コンテナーレジストリーの認証情報に関するAPIです。"
+    },
+    {
+      "name": "タスク",
+      "description": "タスクの実行に関するAPIです。"
+    },
+    {
+      "name": "アーティファクト",
+      "description": "アーティファクト（タスクの生成物）の操作に関するAPIです。\n\n本APIでアーティファクトを操作するためには、タスク内で所定のディレクトリーにアーティファクトを保存いただく必要があります。  \n詳しくは[`SAKURA_ARTIFACT_DIR` に関する説明](https://manual.sakura.ad.jp/cloud/koukaryoku-container/running-tasks.html#koukaryoku-container-environment-variables)を参照ください。\n"
+    },
+    {
+      "name": "プラン",
+      "description": "GPUプランに関するAPIです。"
+    },
+    {
+      "name": "SSH",
+      "description": "タスクへのSSH接続に関するAPIです。"
+    },
+    {
+      "name": "料金",
+      "description": "料金および、お支払いに関するAPIです。"
+    }
+  ],
+  "paths": {
+    "/auth/": {
+      "get": {
+        "tags": [
+          "認証"
+        ],
+        "summary": "クラウドアカウント情報の取得",
+        "description": "APIキーに紐づく、さくらのクラウドのアカウント情報を取得します。",
+        "operationId": "getAuth",
+        "responses": {
+          "200": {
+            "description": "さくらのクラウドのアカウント情報",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Auth"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/auth/agree/": {
+      "post": {
+        "tags": [
+          "認証"
+        ],
+        "summary": "利用規約への同意",
+        "description": "[利用規約](https://www.sakura.ad.jp/corporate/wp-content/themes/sakura-corporate/assets/pdf/yakkan_koukaryoku-dok.pdf)に同意します。  \n必ず内容を熟読の上、同意できる場合のみ本APIをコールしてください。\n\n同意するまで（本APIをコールするまで）、本サービスの各種操作は行えません。\n",
+        "operationId": "agreeToTOS",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "version",
+            "description": "同意した利用規約のバージョン",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "vXXXXXXX"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "成功"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/plans/": {
+      "get": {
+        "tags": [
+          "プラン"
+        ],
+        "summary": "GPUプランの一覧を取得",
+        "description": "タスク実行時にご利用可能なGPUプランの一覧を取得します。  \n実行時には `id` の値をご指定ください。\n",
+        "operationId": "getPlans",
+        "responses": {
+          "200": {
+            "description": "GPUプランの一覧",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "results"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/PageNumberPaginationMeta"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Plan"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/registries/": {
+      "get": {
+        "tags": [
+          "コンテナーレジストリー"
+        ],
+        "summary": "コンテナーレジストリー認証情報の一覧を取得",
+        "description": "「認証情報登録API」で登録した認証情報の一覧を取得します。",
+        "operationId": "getRegistries",
+        "responses": {
+          "200": {
+            "description": "登録済みのコンテナーレジストリーの認証情報の一覧",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "results"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/PageNumberPaginationMeta"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ContainerRegistry"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "コンテナーレジストリー"
+        ],
+        "summary": "コンテナーレジストリーの認証情報を登録",
+        "description": "認証が必要なコンテナーレジストリーの、認証情報を登録します。\n\nプライベートなレジストリーに格納したコンテナーイメージを実行する場合、事前にこのAPIで認証情報を登録してください。  \n公開レジストリーのイメージを実行する場合は本操作は不要です。\n",
+        "operationId": "addRegistry",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateContainerRegistryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "登録されたレジストリー情報",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContainerRegistry"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Validation Error"
+          }
+        }
+      }
+    },
+    "/registries/{registryId}/": {
+      "get": {
+        "tags": [
+          "コンテナーレジストリー"
+        ],
+        "summary": "コンテナーレジストリーの認証情報を取得",
+        "description": "指定IDのコンテナーレジストリーの認証情報を取得します。",
+        "operationId": "getRegistry",
+        "parameters": [
+          {
+            "name": "registryId",
+            "in": "path",
+            "description": "レジストリーID（登録APIのレスポンス内の `id` フィールド）",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "レジストリーの詳細情報（パスワードは取得されません）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContainerRegistry"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "コンテナーレジストリー"
+        ],
+        "summary": "コンテナーレジストリーの認証情報を抹消",
+        "description": "登録された認証情報を抹消します。  \n本APIの呼び出し後は、同じレジストリーIDは本サービスで使えなくなります。\n",
+        "operationId": "deleteRegistry",
+        "parameters": [
+          {
+            "name": "registryId",
+            "in": "path",
+            "description": "レジストリーID（登録APIのレスポンス内の `id` フィールド）",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "抹消成功"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "コンテナーレジストリー"
+        ],
+        "summary": "コンテナーレジストリーの認証情報を更新",
+        "description": "登録済みの認証情報を変更します。  \n登録時に間違えた場合や、コンテナーレジストリーのパスワードを変更した場合などにお使いください。\n",
+        "operationId": "updateRegistry",
+        "parameters": [
+          {
+            "name": "registryId",
+            "in": "path",
+            "description": "レジストリーID（登録APIのレスポンス内の `id` フィールド）",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateContainerRegistryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContainerRegistry"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Validation Error"
+          }
+        }
+      }
+    },
+    "/tasks/": {
+      "get": {
+        "tags": [
+          "タスク"
+        ],
+        "summary": "タスクの一覧を取得",
+        "description": "登録済みのタスクの一覧情報を取得します。",
+        "operationId": "getTasks",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "description": "ページ番号（1 origin）",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "description": "1ページのサイズ",
+            "schema": {
+              "type": "integer",
+              "default": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "tasks",
+            "description": "- タスク・コンテナでの絞り込み(コンマ区切り・スペース区切りでAND検索可能)\n- 検索対象: \n  - タスク\n    - ID\n    - 名前\n  - コンテナ\n    - イメージ\n    - プラン\n",
+            "schema": {
+              "type": "string",
+              "example": "task"
+            }
+          },
+          {
+            "in": "query",
+            "name": "include_artifact",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "アーティファクトが存在するタスクのみ表示する場合は true"
+          },
+          {
+            "in": "query",
+            "name": "created_after",
+            "description": "作成日時 (開始)",
+            "schema": {
+              "$ref": "#/components/schemas/DateTime"
+            }
+          },
+          {
+            "in": "query",
+            "name": "created_before",
+            "description": "作成日時 (終了)",
+            "schema": {
+              "$ref": "#/components/schemas/DateTime"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "description": "ステータスでの絞り込み",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/TaskStatus"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "plan",
+            "description": "プランでの絞り込み",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/PlanID"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "tag",
+            "description": "タグでの絞り込み",
+            "schema": {
+              "type": "string",
+              "example": "tag1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "タスクの一覧情報; `(page - 1) * page_size + 1`件目〜`page * page_size`件目",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "results"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/PageNumberPaginationMeta"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Task"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "タスク"
+        ],
+        "summary": "タスクの登録",
+        "description": "新しいタスクを登録します。  \nタスク実行の詳細については[マニュアル](https://manual.sakura.ad.jp/cloud/koukaryoku-container/running-tasks.html)をご覧ください。\n",
+        "operationId": "createTask",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "登録成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Validation Error"
+          }
+        }
+      }
+    },
+    "/tasks/{taskId}/": {
+      "get": {
+        "tags": [
+          "タスク"
+        ],
+        "summary": "タスクの情報取得",
+        "description": "登録したタスクの情報を取得します。",
+        "operationId": "getTask",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taskId",
+            "description": "タスクID（登録APIのレスポンス内の `id` フィールド）",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "タスク情報",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "タスク"
+        ],
+        "summary": "タスクの情報削除",
+        "description": "タスクの情報を削除します。  \n本APIの呼び出し後は、同じタスクIDは本サービスで使えなくなります。\n\n注）本APIは、実行中のタスクをキャンセルするAPIではありません。  \nタスクをキャンセルしたい場合は、[タスクのキャンセルAPI](#operation/cancelTask)をコールしてください。\n",
+        "operationId": "deleteTask",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "削除成功"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "削除不能"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/tasks/{taskId}/cancel/": {
+      "post": {
+        "tags": [
+          "タスク"
+        ],
+        "summary": "タスクのキャンセル",
+        "description": "実行中のタスクをキャンセルします。",
+        "operationId": "cancelTask",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "タスク",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "キャンセルできる状態にない"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/tasks/{taskId}/download/{target}/": {
+      "get": {
+        "tags": [
+          "タスク"
+        ],
+        "summary": "タスク関連ファイルのダウンロード用URL取得",
+        "description": "タスクに関連するファイル（出力ファイル）のダウンロードURLを取得します。",
+        "operationId": "getTaskDownloadURL",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "path",
+            "name": "target",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "output"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "filename",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "output.txt",
+              "description": "指定するとContentDispositionヘッダにファイル名として指定されます"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "タスク",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "example": "https://objectstorage.example.com/key?signature"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/tasks/{taskId}/containers/{containerIndex}/stream/": {
+      "post": {
+        "tags": [
+          "タスク"
+        ],
+        "summary": "ログストリームの接続要求",
+        "description": "ログストリームを受信するためのWebSocketの接続情報を取得します",
+        "operationId": "logStream",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "path",
+            "name": "containerIndex",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "example": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "WebSocket接続情報",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "url",
+                    "token"
+                  ],
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "example": "wss://example.com/ws"
+                    },
+                    "token": {
+                      "type": "string",
+                      "example": "xxxx.xxxxxxxxxxxxxxxxxxx.xxxxx"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/artifacts/": {
+      "get": {
+        "tags": [
+          "アーティファクト"
+        ],
+        "summary": "アーティファクト情報の一覧取得",
+        "description": "アーティファクト情報の一覧を取得します。",
+        "operationId": "getArtifacts",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "description": "ページ番号",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "description": "1ページのサイズ",
+            "schema": {
+              "type": "integer",
+              "default": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "task",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "指定するとタスクIDで絞り込みます"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "アーティファクト情報の一覧",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "results"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/PageNumberPaginationMeta"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Artifact"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/artifacts/{artifactId}/": {
+      "get": {
+        "tags": [
+          "アーティファクト"
+        ],
+        "summary": "アーティファクト情報を取得",
+        "description": "アーティファクトの情報を取得します。",
+        "operationId": "getArtifact",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifactId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "アーティファクト情報",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Artifact"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/artifacts/{artifactId}/downlaod/": {
+      "get": {
+        "tags": [
+          "アーティファクト"
+        ],
+        "summary": "アーティファクトのダウンロードURL取得",
+        "description": "アーティファクトのダウンロードURLを取得します。",
+        "operationId": "downloadArtifact",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifactId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "filename",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "artifact.tar.gz",
+              "description": "指定するとContentDispositionヘッダにファイル名として指定されます"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "アーティファクト",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "example": "https://objectstorage.example.com/key?signature"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/ssh/keys/": {
+      "get": {
+        "tags": [
+          "SSH"
+        ],
+        "summary": "SSH公開鍵情報の一覧を取得",
+        "description": "登録済みのSSH公開鍵情報情報を取得します。",
+        "operationId": "getSshKeys",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "description": "ページ番号（1 origin）",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "description": "1ページのサイズ",
+            "schema": {
+              "type": "integer",
+              "default": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "is_active",
+            "description": "有効状態でフィルタリングします。  \n- `true`: 有効な鍵のみ  \n- `false`: 無効な鍵のみ  \n- 未指定: すべて\n",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SSH公開鍵情報の一覧; `(page - 1) * page_size + 1`件目〜`page * page_size`件目",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "results"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/PageNumberPaginationMeta"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SshKey"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "SSH"
+        ],
+        "summary": "SSH公開鍵情報の登録",
+        "description": "新しいSSH公開鍵情報を登録します。\n",
+        "operationId": "createSshKey",
+        "requestBody": {
+          "description": "`name`:  \n　SSH公開鍵情報の名前を指定します。  \n`pub_key`:  \n　登録するSSH公開鍵を指定します。  \n`is_active`:  \n　登録するSSH公開鍵の有効/無効を設定します。\n",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSshKey"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "登録成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SshKey"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Validation Error"
+          }
+        }
+      }
+    },
+    "/ssh/keys/{keyID}/": {
+      "get": {
+        "tags": [
+          "SSH"
+        ],
+        "summary": "SSH公開鍵情報の取得",
+        "description": "登録したSSH公開鍵の情報を取得します。",
+        "operationId": "getSshKey",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "keyID",
+            "description": "SSH公開鍵情報ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SSH公開鍵情報",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SshKey"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "SSH"
+        ],
+        "summary": "SSH公開鍵情報の更新",
+        "description": "SSH公開鍵情報を更新します。  \n  \nSSH公開鍵(`pub_key`)の変更はできません。  \n変更が必要な場合は[SSH公開鍵情報の削除API](#operation/deleteSshKey)で削除の後、[SSH公開鍵情報の登録API](#operation/createSshKey)で作成し直してください。\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "keyID",
+            "description": "SSH公開鍵情報ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "`name`:  \n　SSH公開鍵情報の名前を指定します。  \n`is_active`:  \n　SSH公開鍵の有効/無効を設定します。\n",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSshKey"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "SSH公開鍵情報",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SshKey"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "SSH"
+        ],
+        "summary": "SSH公開鍵情報の削除",
+        "description": "SSH公開鍵情報を削除します。\n",
+        "operationId": "deleteSshKey",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "keyID",
+            "description": "SSH公開鍵情報ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "削除成功"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/billing_infos/": {
+      "get": {
+        "tags": [
+          "料金"
+        ],
+        "summary": "請求情報取得",
+        "description": "指定年月の請求情報を取得します。",
+        "operationId": "getBillingInfo",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year",
+            "description": "取得対象の年",
+            "schema": {
+              "type": "integer",
+              "example": 2024
+            }
+          },
+          {
+            "in": "query",
+            "name": "month",
+            "description": "取得対象の月",
+            "schema": {
+              "type": "integer",
+              "example": 6
+            }
+          },
+          {
+            "in": "query",
+            "name": "day",
+            "description": "取得対象の日",
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "指定した年月の課金情報(プランごとに月内の利用分を集計した結果）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "results"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/PageNumberPaginationMeta"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BillingInfo"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Parameters"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/unit_prices/": {
+      "get": {
+        "tags": [
+          "料金"
+        ],
+        "summary": "プラン別の単価一覧取得",
+        "description": "指定年月のプラン別単価（実行時間1秒あたりの金額）一覧を取得します。",
+        "operationId": "getUnitPrices",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year",
+            "description": "取得対象の年",
+            "schema": {
+              "type": "integer",
+              "example": 2024
+            }
+          },
+          {
+            "in": "query",
+            "name": "month",
+            "description": "取得対象の月",
+            "schema": {
+              "type": "integer",
+              "example": 6
+            }
+          },
+          {
+            "in": "query",
+            "name": "day",
+            "description": "取得対象の日",
+            "schema": {
+              "type": "integer",
+              "example": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "指定した年月のプランごとの単価一覧リスト\n- `is_overridden=false` の項目は、プランの標準単価です。\n- `is_overridden=true` の項目は、アカウントに設定された単価です。標準単価よりこちらが優先されます。\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "results"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/PageNumberPaginationMeta"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/UnitPrice"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Parameters"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {}
+      },
+      "Member": {
+        "type": "object",
+        "required": [
+          "member_id"
+        ],
+        "properties": {
+          "member_id": {
+            "type": "string",
+            "description": "さくらインターネットの会員ID",
+            "example": "abc12345"
+          }
+        }
+      },
+      "ResourceId": {
+        "type": "string",
+        "format": "number",
+        "example": "113200564612"
+      },
+      "DateTime": {
+        "type": "string",
+        "format": "iso8601",
+        "example": "2024-10-10T13:50:40.250+09:00"
+      },
+      "Account": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "account_code",
+          "account_name",
+          "member",
+          "tos_agreed_at",
+          "tos_agreed_version",
+          "created_at"
+        ],
+        "properties": {
+          "account_id": {
+            "$ref": "#/components/schemas/ResourceId"
+          },
+          "member": {
+            "$ref": "#/components/schemas/Member"
+          },
+          "account_code": {
+            "type": "string",
+            "description": "さくらのクラウドのアカウントコード",
+            "example": "example-account"
+          },
+          "account_name": {
+            "type": "string",
+            "description": "さくらのクラウドのアカウント名",
+            "example": "テストアカウント"
+          },
+          "tos_agreed_at": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DateTime"
+              }
+            ],
+            "description": "利用規約に同意した日時（未同意の場合は `null` ）",
+            "nullable": true
+          },
+          "tos_agreed_version": {
+            "type": "string",
+            "description": "同意した利用規約のバージョン",
+            "nullable": true,
+            "example": "vXXXXXXXX"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/DateTime"
+          }
+        }
+      },
+      "Auth": {
+        "type": "object",
+        "required": [
+          "user",
+          "member",
+          "account"
+        ],
+        "properties": {
+          "user": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              }
+            ],
+            "nullable": true
+          },
+          "member": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Member"
+              }
+            ],
+            "nullable": true
+          },
+          "account": {
+            "$ref": "#/components/schemas/Account"
+          }
+        }
+      },
+      "PageNumberPaginationMeta": {
+        "type": "object",
+        "required": [
+          "page",
+          "page_size",
+          "total_pages",
+          "count",
+          "next",
+          "previous"
+        ],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "default": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "default": 100
+          },
+          "total_pages": {
+            "type": "integer",
+            "default": 1
+          },
+          "count": {
+            "type": "integer"
+          },
+          "next": {
+            "type": "string",
+            "format": "url",
+            "nullable": true
+          },
+          "previous": {
+            "type": "string",
+            "format": "url",
+            "nullable": true
+          }
+        }
+      },
+      "PlanID": {
+        "type": "string",
+        "enum": [
+          "v100-32gb",
+          "h100-80gb"
+        ]
+      },
+      "Plan": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/PlanID"
+          },
+          "name": {
+            "type": "string",
+            "example": "V100 (32GB)"
+          },
+          "minimum_execution_seconds": {
+            "type": "integer",
+            "example": 0
+          }
+        }
+      },
+      "ContainerRegistry": {
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "hostname",
+          "username"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/DateTime"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/DateTime"
+          },
+          "hostname": {
+            "type": "string",
+            "example": "example.sakuracr.jp"
+          },
+          "username": {
+            "type": "string",
+            "example": "user01"
+          }
+        }
+      },
+      "CreateContainerRegistryRequest": {
+        "type": "object",
+        "required": [
+          "hostname",
+          "username",
+          "password"
+        ],
+        "properties": {
+          "hostname": {
+            "type": "string",
+            "example": "example.sakuracr.jp"
+          },
+          "username": {
+            "type": "string",
+            "example": "user01"
+          },
+          "password": {
+            "type": "string",
+            "example": "p@ssw0rd"
+          }
+        }
+      },
+      "TaskStatus": {
+        "type": "string",
+        "enum": [
+          "waiting",
+          "running",
+          "error",
+          "done",
+          "aborted",
+          "canceled"
+        ]
+      },
+      "ContainerHttpDefinition": {
+        "type": "object",
+        "required": [
+          "port",
+          "path"
+        ],
+        "properties": {
+          "port": {
+            "type": "integer",
+            "example": 80
+          },
+          "path": {
+            "type": "string",
+            "example": "/"
+          }
+        }
+      },
+      "ContainerSshShell": {
+        "type": "string",
+        "enum": [
+          "/bin/sh",
+          "/bin/bash",
+          "/bin/zsh"
+        ]
+      },
+      "ContainerSshDefinition": {
+        "type": "object",
+        "required": [
+          "shell",
+          "port"
+        ],
+        "properties": {
+          "shell": {
+            "$ref": "#/components/schemas/ContainerSshShell"
+          },
+          "host_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "port": {
+            "type": "integer"
+          }
+        }
+      },
+      "Container": {
+        "type": "object",
+        "required": [
+          "index",
+          "image",
+          "command",
+          "entrypoint",
+          "environment",
+          "http",
+          "ssh",
+          "plan",
+          "exit_code",
+          "registry",
+          "execution_seconds",
+          "start_at",
+          "stop_at"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer"
+          },
+          "image": {
+            "type": "string",
+            "example": "nginx:latest"
+          },
+          "registry": {
+            "type": "string",
+            "format": "uuid",
+            "description": "コンテナレジストリ認証情報",
+            "nullable": true
+          },
+          "command": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "/bin/sh",
+              "-c",
+              "env"
+            ]
+          },
+          "entrypoint": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "sh",
+              "-c"
+            ]
+          },
+          "environment": {
+            "type": "object",
+            "properties": {
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "example": {
+              "EXAMPLE_ENV": "example"
+            }
+          },
+          "http": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContainerHttpDefinition"
+              }
+            ],
+            "nullable": true
+          },
+          "ssh": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContainerSshDefinition"
+              }
+            ],
+            "nullable": true
+          },
+          "plan": {
+            "$ref": "#/components/schemas/PlanID"
+          },
+          "exit_code": {
+            "type": "integer",
+            "example": 0,
+            "nullable": true
+          },
+          "execution_seconds": {
+            "type": "integer",
+            "nullable": true,
+            "default": null
+          },
+          "start_at": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DateTime"
+              }
+            ],
+            "nullable": true
+          },
+          "stop_at": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DateTime"
+              }
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "Artifact": {
+        "type": "object",
+        "required": [
+          "id",
+          "task",
+          "created_at",
+          "deleted_at",
+          "filename",
+          "size_bytes"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "task": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/DateTime"
+          },
+          "deleted_at": {
+            "$ref": "#/components/schemas/DateTime"
+          },
+          "filename": {
+            "type": "string",
+            "example": "artifact.tar.gz"
+          },
+          "size_bytes": {
+            "type": "integer"
+          }
+        }
+      },
+      "Task": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "created_at",
+          "updated_at",
+          "canceled_at",
+          "http_uri",
+          "containers",
+          "status",
+          "error_message",
+          "artifact",
+          "tags"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/DateTime"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/DateTime"
+          },
+          "canceled_at": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DateTime"
+              }
+            ],
+            "nullable": true
+          },
+          "http_uri": {
+            "type": "string",
+            "example": "https://example.container.sakurausercontent.com",
+            "nullable": true
+          },
+          "containers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Container"
+            }
+          },
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "tag1",
+              "tag2",
+              "tag3"
+            ]
+          },
+          "error_message": {
+            "type": "string",
+            "nullable": false,
+            "example": "invalid registry permission"
+          },
+          "artifact": {
+            "$ref": "#/components/schemas/Artifact"
+          },
+          "execution_time_limit_sec": {
+            "type": "integer",
+            "nullable": true,
+            "default": null
+          }
+        }
+      },
+      "ContainerDefinition": {
+        "type": "object",
+        "required": [
+          "image",
+          "command",
+          "entrypoint",
+          "plan"
+        ],
+        "properties": {
+          "image": {
+            "type": "string",
+            "example": "nginx:latest"
+          },
+          "registry": {
+            "type": "string",
+            "format": "uuid",
+            "description": "コンテナレジストリ認証情報",
+            "nullable": true
+          },
+          "command": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "/bin/sh",
+              "-c",
+              "env"
+            ]
+          },
+          "entrypoint": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "sh",
+              "-c"
+            ]
+          },
+          "environment": {
+            "type": "object",
+            "properties": {
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "example": {
+              "EXAMPLE_ENV": "example"
+            }
+          },
+          "http": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContainerHttpDefinition"
+              }
+            ],
+            "nullable": true
+          },
+          "ssh": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContainerSshDefinition"
+              }
+            ],
+            "nullable": true
+          },
+          "plan": {
+            "$ref": "#/components/schemas/PlanID"
+          }
+        }
+      },
+      "CreateTaskRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "containers",
+          "tags"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "containers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContainerDefinition"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "tag1",
+              "tag2",
+              "tag3"
+            ]
+          },
+          "execution_time_limit_sec": {
+            "type": "integer",
+            "nullable": true,
+            "default": null
+          }
+        }
+      },
+      "SshKey": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "pub_key",
+          "is_active"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "key-001"
+          },
+          "pub_key": {
+            "type": "string",
+            "example": "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAuKpK2QW9+3aZJ2vLC4Rk9v2DlHh8ejZ3O8Qp8g7VRVqbgOHRqZL3FoyPb6jl8mUvUeT5LjYKX8cL7ozGnYtFqN2KqzVGpjJ9g+J3MlNhnfM8jGZoIf1nmfpA5gItkX5iLtJ9cPC3nVo4U9qxNT3kNdc7MkPaa2Te9Zz5eQdZbMFeBpjNjfK example-001@example.com"
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "CreateSshKey": {
+        "type": "object",
+        "required": [
+          "name",
+          "pub_key",
+          "is_active"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "key-001"
+          },
+          "pub_key": {
+            "type": "string",
+            "example": "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAuKpK2QW9+3aZJ2vLC4Rk9v2DlHh8ejZ3O8Qp8g7VRVqbgOHRqZL3FoyPb6jl8mUvUeT5LjYKX8cL7ozGnYtFqN2KqzVGpjJ9g+J3MlNhnfM8jGZoIf1nmfpA5gItkX5iLtJ9cPC3nVo4U9qxNT3kNdc7MkPaa2Te9Zz5eQdZbMFeBpjNjfK example-001@example.com"
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "UpdateSshKey": {
+        "type": "object",
+        "required": [
+          "name",
+          "is_active"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "key-001"
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "BillingDetail": {
+        "type": "object",
+        "required": [
+          "sequence_no",
+          "plan",
+          "usage_type",
+          "usage",
+          "amount",
+          "description"
+        ],
+        "properties": {
+          "sequence_no": {
+            "type": "integer"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/PlanID"
+          },
+          "usage_type": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ]
+          },
+          "usage": {
+            "type": "integer"
+          },
+          "amount": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "BillingInfo": {
+        "type": "object",
+        "required": [
+          "account",
+          "bill_close_at",
+          "details",
+          "last_upload_at"
+        ],
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/ResourceId"
+          },
+          "bill_close_at": {
+            "type": "string",
+            "format": "date"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingDetail"
+            }
+          },
+          "last_upload_at": {
+            "$ref": "#/components/schemas/DateTime"
+          }
+        }
+      },
+      "UnitPrice": {
+        "type": "object",
+        "required": [
+          "plan",
+          "price",
+          "is_overridden",
+          "begin_at",
+          "end_at"
+        ],
+        "properties": {
+          "plan": {
+            "$ref": "#/components/schemas/PlanID"
+          },
+          "price": {
+            "type": "string",
+            "description": "単価の文字列表現\n（計算に使う場合は `Number()` などで数値化してください）\n",
+            "example": "0.06"
+          },
+          "is_overridden": {
+            "type": "boolean",
+            "default": false
+          },
+          "begin_at": {
+            "type": "string",
+            "format": "date"
+          },
+          "end_at": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "StartCondition": {
+        "type": "object",
+        "required": [
+          "prev_task",
+          "exit_code"
+        ],
+        "properties": {
+          "prev_task": {
+            "type": "string",
+            "example": "Task 001"
+          },
+          "exit_code": {
+            "type": "integer"
+          }
+        }
+      },
+      "CreateTaskDefinition": {
+        "type": "object",
+        "required": [
+          "name",
+          "task_definition",
+          "start_conditions"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Task 001"
+          },
+          "task_definition": {
+            "$ref": "#/components/schemas/CreateTaskRequest"
+          },
+          "start_conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StartCondition"
+            }
+          }
+        }
+      },
+      "TaskDefinition": {
+        "type": "object",
+        "required": [
+          "name",
+          "task_definition",
+          "task",
+          "start_conditions"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Task 001"
+          },
+          "task_definition": {
+            "$ref": "#/components/schemas/CreateTaskRequest"
+          },
+          "task": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "start_conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StartCondition"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  }
+}

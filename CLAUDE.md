@@ -1,0 +1,174 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## プロジェクト概要
+
+さくらのクラウドの GPU コンテナ実行プラットフォーム「高火力 DOK」を操作する Python CLI ツール。
+
+- API仕様: https://manual.sakura.ad.jp/koukaryoku-dok-api/spec.html
+- API Base URL: `https://secure.sakura.ad.jp/cloud/zone/is1a/api/managed-container/1.0`
+- 認証: Basic認証（アクセストークン=ユーザーID、アクセストークンシークレット=パスワード）
+
+## コマンド
+
+```bash
+# 開発環境セットアップ
+uv sync
+
+# CLI実行
+uv run dok
+
+# テスト実行
+uv run pytest
+
+# 単一テスト実行
+uv run pytest tests/test_client.py::test_name -v
+
+# リント・フォーマット
+uv run ruff check .
+uv run ruff format .
+
+# 型チェック
+uv run mypy src/
+```
+
+## アーキテクチャ
+
+```
+src/dok/
+├── main.py          # CLIルートコマンド、グローバルオプション、サブコマンド登録
+├── config.py        # 設定ファイル管理 (~/.config/dok/config.toml)
+├── client.py        # httpx ベース API クライアント (DokClient)
+├── exceptions.py    # カスタム例外 (DokError, AuthError, NotFoundError, ApiError)
+├── output.py        # rich を使ったテーブル/JSON出力ユーティリティ
+├── commands/        # サブコマンド (typer.Typer インスタンスを export)
+│   ├── auth.py      # dok auth show / agree
+│   ├── task.py      # dok task list/show/create/delete/cancel/download/logs
+│   ├── registry.py  # dok registry list/show/create/update/delete
+│   ├── artifact.py  # dok artifact list/show/download
+│   ├── plan.py      # dok plan list
+│   ├── ssh.py       # dok ssh list/show/create/update/delete
+│   └── billing.py   # dok billing show / prices
+└── models/          # Pydantic v2 モデル (APIレスポンスの型定義)
+```
+
+### 主要な設計方針
+
+**レイヤー構成**: `commands/` → `client.py` → HTTP → API。コマンドは `DokClient` を通じてのみ API を呼ぶ。
+
+**設定解決の優先順位**: 環境変数 (`DOK_ACCESS_TOKEN`, `DOK_ACCESS_TOKEN_SECRET`) > `--profile` 指定 > `~/.config/dok/config.toml` の `[default]`。
+
+**出力**: 全コマンドで `--output table|json` をサポート。テーブルは `rich`、JSON は `json.dumps` でそのまま出力。エラーは `stderr` に出力して exit code 1。
+
+**破壊的操作**: `delete` 系コマンドは `typer.confirm()` で確認を挟む。`--yes / -y` で省略可能。
+
+**ログストリーミング**: `dok task logs` は `/tasks/{taskId}/containers/{containerIndex}/stream/` から WebSocket URL と token を取得し、`websockets` ライブラリで接続してログを stdout に出力する。
+
+## CLIコマンド体系
+
+```
+dok configure                              # 初期設定ウィザード
+dok auth show / agree
+dok task list / show / create / delete / cancel / download / logs
+dok registry list / show / create / update / delete
+dok artifact list / show / download
+dok plan list
+dok ssh list / show / create / update / delete
+dok billing show / prices
+```
+
+グローバルオプション: `--profile/-p`, `--output/-o`, `--zone`
+
+## API スキーマ（仕様準拠）
+
+### タスク作成リクエスト (`CreateTaskRequest`)
+
+必須フィールド: `name`, `containers`, `tags`
+
+```json
+{
+  "name": "my-task",
+  "tags": ["tag1", "tag2"],
+  "execution_time_limit_sec": 3600,
+  "containers": [
+    {
+      "image": "nginx:latest",
+      "plan": "v100-32gb",
+      "command": ["/bin/sh", "-c", "python train.py"],
+      "entrypoint": [],
+      "registry": null,
+      "environment": {
+        "BATCH_SIZE": "32"
+      },
+      "ssh": {
+        "shell": "/bin/bash",
+        "port": 22
+      },
+      "http": null
+    }
+  ]
+}
+```
+
+### `ContainerDefinition` フィールド
+
+| フィールド | 型 | 必須 | 説明 |
+|---|---|---|---|
+| `image` | string | ✓ | コンテナイメージ URI |
+| `command` | string[] | ✓ | 実行コマンド配列 |
+| `entrypoint` | string[] | ✓ | エントリポイント配列 |
+| `plan` | PlanID | ✓ | `"v100-32gb"` または `"h100-80gb"` |
+| `registry` | UUID \| null | - | コンテナレジストリ認証情報 ID |
+| `environment` | object | - | 環境変数 (key-value) |
+| `ssh` | ContainerSshDefinition \| null | - | SSH 接続設定 |
+| `http` | ContainerHttpDefinition \| null | - | HTTP 公開設定 |
+
+### `ContainerSshDefinition`
+
+| フィールド | 型 | 値 |
+|---|---|---|
+| `shell` | enum | `/bin/sh`, `/bin/bash`, `/bin/zsh` |
+| `port` | integer | ポート番号 |
+| `host_name` | string \| null | ホスト名 |
+
+### `ContainerHttpDefinition`
+
+| フィールド | 型 |
+|---|---|
+| `port` | integer |
+| `path` | string |
+
+### タスクステータス (`TaskStatus`)
+
+`waiting` / `running` / `error` / `done` / `aborted` / `canceled`
+
+## タスク定義ファイル（`-f` オプション）
+
+`dok task create -f task.json` で読み込む JSON ファイル（`CreateTaskRequest` と同一構造）:
+
+```json
+{
+  "name": "my-task",
+  "tags": ["tag1", "tag2"],
+  "execution_time_limit_sec": 3600,
+  "containers": [
+    {
+      "image": "ghcr.io/example/myapp:latest",
+      "plan": "v100-32gb",
+      "command": ["python", "train.py"],
+      "entrypoint": [],
+      "registry": null,
+      "environment": {
+        "BATCH_SIZE": "32",
+        "MODEL_PATH": "/data/model.pt"
+      },
+      "ssh": {
+        "shell": "/bin/bash",
+        "port": 22
+      },
+      "http": null
+    }
+  ]
+}
+```
