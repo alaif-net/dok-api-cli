@@ -57,7 +57,13 @@ src/dok/
 
 **レイヤー構成**: `commands/` → `client.py` → HTTP → API。コマンドは `DokClient` を通じてのみ API を呼ぶ。
 
-**設定解決の優先順位**: 環境変数 (`DOK_ACCESS_TOKEN`, `DOK_ACCESS_TOKEN_SECRET`) > `--profile` 指定 > `~/.config/dok/config.toml` の `[default]`。
+**設定解決の優先順位**: CLIオプション > 環境変数 > `~/.config/dok/config.toml` の指定プロファイル（デフォルト: `default`）。設定ファイルが存在しなくても環境変数・CLIオプションのみで動作する。
+
+| 設定項目 | CLIオプション | 環境変数 | 設定ファイルキー |
+|---|---|---|---|
+| アクセストークン | `--token` | `DOK_ACCESS_TOKEN` | `access_token` |
+| トークンシークレット | `--token-secret` | `DOK_ACCESS_TOKEN_SECRET` | `access_token_secret` |
+| Base URL | `--base-url` | `DOK_BASE_URL` | `base_url` |
 
 **出力**: 全コマンドで `--output table|json` をサポート。テーブルは `rich`、JSON は `json.dumps` でそのまま出力。エラーは `stderr` に出力して exit code 1。
 
@@ -78,7 +84,7 @@ dok ssh list / show / create / update / delete
 dok billing show / prices
 ```
 
-グローバルオプション: `--profile/-p`, `--output/-o`, `--zone`
+グローバルオプション: `--profile/-p`, `--output/-o`, `--token`, `--token-secret`, `--base-url`
 
 ## API スキーマ（仕様準拠）
 
