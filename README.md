@@ -1,4 +1,4 @@
-# dok
+# dok-api-cli
 
 さくらインターネットの GPU コンテナ実行プラットフォーム「[高火力 DOK](https://www.sakura.ad.jp/koukaryoku-dok)」を操作する CLI ツール。
 
