@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict
 class PlanID(str, Enum):
     v100_32gb = "v100-32gb"
     h100_80gb = "h100-80gb"
+    h100_8gpu_80gb = "h100-8gpu-80gb"
 
 
 class TaskStatus(str, Enum):

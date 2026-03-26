@@ -20,8 +20,17 @@ def show(ctx: typer.Context) -> None:
     if fmt == "json":
         output.print_json(data)
     else:
-        rows = [[str(v) for v in data.values()]]
-        output.print_table(list(data.keys()), rows, title="アカウント情報")
+        account = data.get("account", {})
+        member = data.get("member") or account.get("member", {})
+        rows = [
+            ["アカウントID", account.get("account_id", "")],
+            ["アカウントコード", account.get("account_code", "")],
+            ["アカウント名", account.get("account_name", "")],
+            ["会員ID", (member or {}).get("member_id", "")],
+            ["利用規約同意日時", account.get("tos_agreed_at", "") or "未同意"],
+            ["作成日時", account.get("created_at", "")],
+        ]
+        output.print_table(["項目", "値"], rows, title="アカウント情報")
 
 
 @app.command("agree")

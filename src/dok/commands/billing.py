@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import datetime
+
 import typer
 
 from dok import output
@@ -32,11 +34,22 @@ def show(ctx: typer.Context) -> None:
 
 
 @app.command("prices")
-def prices(ctx: typer.Context) -> None:
+def prices(
+    ctx: typer.Context,
+    year: int = typer.Option(None, help="取得対象の年 (デフォルト: 今年)"),
+    month: int = typer.Option(None, help="取得対象の月 (デフォルト: 今月)"),
+    day: int = typer.Option(None, help="取得対象の日 (デフォルト: 今日)"),
+) -> None:
     """プラン別単価を表示する。"""
     client = get_client(ctx)
     fmt: str = ctx.obj["output"]
-    data = client.get("/unit_prices/")
+    today = datetime.date.today()
+    params = {
+        "year": year or today.year,
+        "month": month or today.month,
+        "day": day or today.day,
+    }
+    data = client.get("/unit_prices/", params=params)
     if fmt == "json":
         output.print_json(data)
     else:
