@@ -9,9 +9,17 @@ import typer
 
 from dok import output
 from dok.client import DokClient
-from dok.context import get_client
+from dok.context import get_client, output_callback
 
 app = typer.Typer(help="タスク管理")
+
+
+@app.callback()
+def _callback(
+    ctx: typer.Context,
+    fmt: Annotated[Optional[str], typer.Option("--output", "-o", help="出力形式 (table / json)")] = None,
+) -> None:
+    output_callback(ctx, fmt)
 
 _STATUS_COLORS = {
     "waiting": "yellow",
@@ -229,8 +237,14 @@ def logs(
     container_index: Annotated[int, typer.Argument(help="コンテナインデックス")] = 0,
 ) -> None:
     """タスクのログをストリーミング表示する。"""
+    from dok.exceptions import AuthError
     client = get_client(ctx)
-    info = client.get_stream_info(task_id, container_index)
+    try:
+        info = client.get_stream_info(task_id, container_index)
+    except AuthError as e:
+        if "not running" in str(e).lower() or "task is not running" in str(e).lower():
+            output.exit_with_error("タスクが実行中ではありません。ログストリームは実行中のタスクのみ利用できます。")
+        raise
     ws_url: str = info["url"]
     token: str = info["token"]
 

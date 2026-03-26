@@ -1,14 +1,23 @@
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Optional
 
 import typer
 
 from dok import output
 from dok.client import DokClient
-from dok.context import get_client
+from dok.context import get_client, output_callback
 
 app = typer.Typer(help="認証・アカウント情報")
+
+@app.callback()
+def _callback(
+    ctx: typer.Context,
+    fmt: "Optional[str]" = typer.Option(None, "--output", "-o", help="出力形式 (table / json)"),
+) -> None:
+    output_callback(ctx, fmt)
+
+
 
 
 @app.command("show")

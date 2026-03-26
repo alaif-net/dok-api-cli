@@ -6,9 +6,18 @@ import typer
 
 from dok import output
 from dok.client import DokClient
-from dok.context import get_client
+from dok.context import get_client, output_callback
 
 app = typer.Typer(help="コンテナレジストリ認証情報")
+
+@app.callback()
+def _callback(
+    ctx: typer.Context,
+    fmt: "Optional[str]" = typer.Option(None, "--output", "-o", help="出力形式 (table / json)"),
+) -> None:
+    output_callback(ctx, fmt)
+
+
 
 
 @app.command("list")
