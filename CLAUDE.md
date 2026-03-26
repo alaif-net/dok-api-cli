@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-さくらのクラウドの GPU コンテナ実行プラットフォーム「高火力 DOK」を操作する Python CLI ツール。
+さくらインターネットの GPU コンテナ実行プラットフォーム「高火力 DOK」を操作する Python CLI ツール。
 
 - API仕様: https://manual.sakura.ad.jp/koukaryoku-dok-api/spec.html
 - API Base URL: `https://secure.sakura.ad.jp/cloud/zone/is1a/api/managed-container/1.0`
@@ -41,6 +41,7 @@ src/dok/
 ├── config.py        # 設定ファイル管理 (~/.config/dok/config.toml)
 ├── client.py        # httpx ベース API クライアント (DokClient)
 ├── exceptions.py    # カスタム例外 (DokError, AuthError, NotFoundError, ApiError)
+├── context.py       # get_client() ヘルパー（クライアント遅延初期化）
 ├── output.py        # rich を使ったテーブル/JSON出力ユーティリティ
 ├── commands/        # サブコマンド (typer.Typer インスタンスを export)
 │   ├── auth.py      # dok auth show / agree
@@ -124,7 +125,7 @@ dok billing show / prices
 | `image` | string | ✓ | コンテナイメージ URI |
 | `command` | string[] | ✓ | 実行コマンド配列 |
 | `entrypoint` | string[] | ✓ | エントリポイント配列 |
-| `plan` | PlanID | ✓ | `"v100-32gb"` または `"h100-80gb"` |
+| `plan` | PlanID | ✓ | `"v100-32gb"`, `"h100-80gb"`, `"h100-8gpu-80gb"` |
 | `registry` | UUID \| null | - | コンテナレジストリ認証情報 ID |
 | `environment` | object | - | 環境変数 (key-value) |
 | `ssh` | ContainerSshDefinition \| null | - | SSH 接続設定 |

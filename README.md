@@ -6,7 +6,7 @@
 
 ```bash
 # リポジトリをクローンして uv でセットアップ
-git clone https://github.com/yourname/dok-api-cli.git
+git clone https://github.com/alaif-net/dok-api-cli.git
 cd dok-api-cli
 uv sync
 
@@ -66,7 +66,7 @@ base_url = "https://custom.example.com/api/1.0"
 | `--token-secret` | `DOK_ACCESS_TOKEN_SECRET` | アクセストークンシークレット |
 | `--base-url` | `DOK_BASE_URL` | API Base URL |
 | `--profile / -p` | | 使用するプロファイル名（デフォルト: `default`） |
-| `--output / -o` | | 出力形式 `table`（デフォルト）または `json` |
+| `--output / -o` | | 出力形式 `table`（デフォルト）または `json`。ルートコマンドまたはサブコマンドグループの後に指定可 |
 
 ### タスク
 
@@ -174,6 +174,7 @@ dok auth agree
 
 dok billing show
 dok billing prices
+dok billing prices --year 2025 --month 12 --day 1  # 日付指定（デフォルト: 今日）
 ```
 
 ## 開発
