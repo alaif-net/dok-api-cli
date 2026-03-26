@@ -2,6 +2,8 @@
 
 さくらインターネットの GPU コンテナ実行プラットフォーム「[高火力 DOK](https://www.sakura.ad.jp/koukaryoku-dok)」を操作する CLI ツール。
 
+[高火力 DOK APIドキュメント (1.0.0)](https://manual.sakura.ad.jp/koukaryoku-dok-api/spec.html)を参照し作成。
+
 ## インストール
 
 ```bash
