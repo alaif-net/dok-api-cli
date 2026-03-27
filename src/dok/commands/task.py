@@ -199,10 +199,13 @@ def delete(
 def cancel(
     ctx: typer.Context,
     task_id: Annotated[str, typer.Argument(help="タスクID")],
+    yes: Annotated[bool, typer.Option("--yes", "-y", help="確認をスキップ")] = False,
 ) -> None:
     """実行中のタスクをキャンセルする。"""
     client = get_client(ctx)
     fmt: str = ctx.obj["output"]
+    if not yes:
+        typer.confirm(f"タスク {task_id} をキャンセルしますか？", abort=True)
     data = client.post(f"/tasks/{task_id}/cancel/")
     if fmt == "json":
         output.print_json(data)
