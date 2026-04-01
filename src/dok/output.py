@@ -18,9 +18,9 @@ def print_json(data: Any) -> None:
 def print_table(headers: list[str], rows: list[list[str]], title: str = "") -> None:
     table = Table(title=title, show_header=True, header_style="bold cyan")
     for header in headers:
-        table.add_column(header)
+        table.add_column(header, no_wrap=header == "ID")
     for row in rows:
-        table.add_row(*row)
+        table.add_row(*[str(v) if v is not None else "" for v in row])
     console.print(table)
 
 
