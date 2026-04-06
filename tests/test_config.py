@@ -32,8 +32,10 @@ def test_cli_option_overrides_env():
 
 def test_missing_token_raises():
     with patch.dict(os.environ, {}, clear=True):
-        with pytest.raises(ConfigError):
-            load()
+        with patch("dok.config.CONFIG_FILE") as mock_file:
+            mock_file.exists.return_value = False
+            with pytest.raises(ConfigError):
+                load()
 
 
 def test_custom_base_url():
