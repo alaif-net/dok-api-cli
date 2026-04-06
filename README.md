@@ -26,6 +26,13 @@ uv run dok configure
 
 `~/.config/dok/config.toml` に認証情報を保存します。
 
+### 設定済みプロファイルの確認
+
+```bash
+dok configure list
+dok -o json configure list  # JSON形式で出力
+```
+
 ### 環境変数で設定（CI/CD・コンテナ向け）
 
 ```bash
