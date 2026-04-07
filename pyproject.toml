@@ -1,7 +1,7 @@
 [project]
 name = "dok-api-cli"
 version = "0.1.0"
-description = "CLI tool for さくらのクラウド 高火力 DOK API"
+description = "CLI tool for 高火力 DOK API"
 requires-python = ">=3.11"
 dependencies = [
     "typer>=0.12",
