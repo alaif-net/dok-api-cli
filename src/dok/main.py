@@ -11,7 +11,7 @@ from dok.exceptions import ConfigError
 
 app = typer.Typer(
     name="dok",
-    help="さくらのクラウド 高火力 DOK CLI",
+    help="高火力 DOK CLI",
     no_args_is_help=True,
 )
 
