@@ -44,14 +44,16 @@ src/dok/
 ├── context.py       # get_client() ヘルパー（クライアント遅延初期化）
 ├── output.py        # rich を使ったテーブル/JSON出力ユーティリティ
 ├── commands/        # サブコマンド (typer.Typer インスタンスを export)
-│   ├── auth.py      # dok auth show / agree
-│   ├── task.py      # dok task list/show/create/delete/cancel/download/logs
-│   ├── registry.py  # dok registry list/show/create/update/delete
-│   ├── artifact.py  # dok artifact list/show/download
-│   ├── plan.py      # dok plan list
-│   ├── ssh.py       # dok ssh list/show/create/update/delete
-│   └── billing.py   # dok billing show / prices
+│   ├── auth.py         # dok auth show / agree
+│   ├── task.py         # dok task list/show/create/delete/cancel/download/logs/notify
+│   ├── registry.py     # dok registry list/show/create/update/delete
+│   ├── artifact.py     # dok artifact list/show/download
+│   ├── plan.py         # dok plan list
+│   ├── ssh.py          # dok ssh list/show/create/update/delete
+│   ├── billing.py      # dok billing show / prices
+│   └── notification.py # dok notification endpoint .../setting ...
 └── models/          # Pydantic v2 モデル (APIレスポンスの型定義)
+    └── notification.py # NotificationEndpoint, NotificationSetting など
 ```
 
 ### 主要な設計方針
@@ -72,17 +74,21 @@ src/dok/
 
 **ログストリーミング**: `dok task logs` は `/tasks/{taskId}/containers/{containerIndex}/stream/` から WebSocket URL と token を取得し、`websockets` ライブラリで接続してログを stdout に出力する。
 
+**HTTP メソッド**: `DokClient` は `get / post / put / patch / delete` をサポート。`patch` は通知設定の部分更新 (`PATCH /notification/settings/{id}/`) で使用。
+
 ## CLIコマンド体系
 
 ```
 dok configure                              # 初期設定ウィザード
 dok auth show / agree
-dok task list / show / create / delete / cancel / download / logs
+dok task list / show / create / delete / cancel / download / logs / notify
 dok registry list / show / create / update / delete
 dok artifact list / show / download
 dok plan list
 dok ssh list / show / create / update / delete
 dok billing show / prices
+dok notification endpoint list / show / create / update / delete
+dok notification setting list / show / create / update / patch / delete / test-webhook
 ```
 
 グローバルオプション: `--profile/-p`, `--output/-o`, `--token`, `--token-secret`, `--base-url`
@@ -149,6 +155,37 @@ dok billing show / prices
 ### タスクステータス (`TaskStatus`)
 
 `waiting` / `running` / `error` / `done` / `aborted` / `canceled`
+
+### 通知エンドポイント (`NotificationEndpoint`)
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `id` | integer | エンドポイントID |
+| `endpoint_type` | enum | `"webhook"` |
+| `address` | string | Webhook URL |
+| `is_verified` | boolean | 検証済みかどうか |
+| `created_at` | DateTime | 作成日時 |
+| `updated_at` | DateTime | 更新日時 |
+
+### 通知設定 (`NotificationSetting`)
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `id` | UUID | 設定ID |
+| `event_type` | string | イベント種別（例: `task_completed`） |
+| `is_enabled` | boolean | 有効/無効 |
+| `endpoints` | NotificationEndpoint[] | 通知先エンドポイント一覧 |
+| `created_at` | DateTime | 作成日時 |
+| `updated_at` | DateTime | 更新日時 |
+
+### タスク完了通知設定 (`TaskNotificationPreferenceRequest`)
+
+`PUT /tasks/{taskId}/notification-preference/` で使用。
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `is_enabled` | boolean \| null | 通知を有効にするかどうか |
+| `endpoint_ids` | integer[] \| null | 通知先エンドポイントIDのリスト |
 
 ## タスク定義ファイル（`-f` オプション）
 

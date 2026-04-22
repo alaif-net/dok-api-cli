@@ -59,6 +59,11 @@ class DokClient:
         self._raise_for_status(response)
         return response.json()
 
+    def patch(self, path: str, json: Optional[dict[str, Any]] = None) -> Any:
+        response = self._client.patch(path, json=json)
+        self._raise_for_status(response)
+        return response.json()
+
     def delete(self, path: str) -> None:
         response = self._client.delete(path)
         self._raise_for_status(response)

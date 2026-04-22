@@ -6,7 +6,7 @@ import typer
 
 from dok import config as cfg
 from dok import output
-from dok.commands import auth, artifact, billing, plan, registry, ssh, task
+from dok.commands import auth, artifact, billing, notification, plan, registry, ssh, task
 from dok.exceptions import ConfigError
 
 app = typer.Typer(
@@ -22,6 +22,7 @@ app.add_typer(artifact.app, name="artifact")
 app.add_typer(plan.app, name="plan")
 app.add_typer(ssh.app, name="ssh")
 app.add_typer(billing.app, name="billing")
+app.add_typer(notification.app, name="notification")
 
 
 

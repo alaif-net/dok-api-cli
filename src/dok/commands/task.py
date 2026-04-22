@@ -262,3 +262,26 @@ def logs(
                 typer.echo(message, nl=False)
 
     asyncio.run(_stream())
+
+
+@app.command("notify")
+def notify(
+    ctx: typer.Context,
+    task_id: Annotated[str, typer.Argument(help="タスクID")],
+    enabled: Annotated[Optional[bool], typer.Option("--enabled/--disabled", help="通知を有効にするかどうか")] = None,
+    endpoint_id: Annotated[Optional[list[str]], typer.Option("--endpoint-id", help="通知先エンドポイントID (複数指定可)")] = None,
+) -> None:
+    """タスク完了時の通知設定を行う。"""
+    client = get_client(ctx)
+    fmt: str = ctx.obj["output"]
+    body: dict = {}
+    if enabled is not None:
+        body["is_enabled"] = enabled
+    if endpoint_id is not None:
+        body["endpoint_ids"] = endpoint_id
+    data = client.put(f"/tasks/{task_id}/notification-preference/", json=body)
+    if fmt == "json":
+        output.print_json(data)
+    else:
+        ok = data.get("ok", False)
+        typer.echo(f"通知設定を更新しました: {'成功' if ok else '失敗'}")
