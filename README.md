@@ -175,6 +175,71 @@ dok ssh update <key-id> --name new-name
 dok ssh delete <key-id>
 ```
 
+### 通知
+
+タスク完了などのイベントを Webhook で受け取る設定ができます。
+
+#### 通知エンドポイント
+
+```bash
+# 一覧表示
+dok notification endpoint list
+
+# 詳細表示
+dok notification endpoint show <endpoint-id>
+
+# 登録（Webhook URL）
+dok notification endpoint create --address https://example.com/webhook
+
+# 更新
+dok notification endpoint update <endpoint-id> --address https://example.com/new-webhook
+
+# 削除
+dok notification endpoint delete <endpoint-id>
+```
+
+#### 通知設定
+
+```bash
+# 一覧表示
+dok notification setting list
+
+# 詳細表示
+dok notification setting show <setting-id>
+
+# 登録
+dok notification setting create \
+  --event-type task_completed \
+  --endpoint-id <endpoint-id> \
+  --enabled
+
+# 更新（全フィールド置換）
+dok notification setting update <setting-id> \
+  --event-type task_completed \
+  --endpoint-id <endpoint-id> \
+  --enabled
+
+# 部分更新（有効/無効の切り替えなど）
+dok notification setting patch <setting-id> --enabled
+dok notification setting patch <setting-id> --disabled
+
+# 削除
+dok notification setting delete <setting-id>
+
+# Webhook テスト送信
+dok notification setting test-webhook --url https://example.com/webhook
+```
+
+#### タスク単位の通知設定
+
+```bash
+# タスク完了時の通知を有効化
+dok task notify <task-id> --enabled --endpoint-id <endpoint-id>
+
+# 無効化
+dok task notify <task-id> --disabled
+```
+
 ### 認証・料金
 
 ```bash
