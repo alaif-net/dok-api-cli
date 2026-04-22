@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "高火力 DOK APIドキュメント",
-    "description": "- - -\n\n# はじめに\n\n「[高火力 DOK](https://www.sakura.ad.jp/koukaryoku-dok)」が提供するAPIの利用方法を公開しています。  \n「高火力 DOK」自体の説明については[マニュアル](https://manual.sakura.ad.jp/cloud/manual-koukaryoku-container.html)をご覧ください。\n\n# APIご利用の前に\n\n本APIの利用には、さくらのクラウドの **APIキー** が必要です。  \nAPIキーの発行については[マニュアル](https://manual.sakura.ad.jp/cloud/api/apikey.html)をご覧ください。\n\nAPIキーの「アクセストークン」をユーザーID、「アクセストークンシークレット」をパスワードとした **Basic認証** で本APIをご利用ください。\n\n- - -\n",
+    "description": "- - -\n\n# はじめに\n\n「[高火力 DOK](https://www.sakura.ad.jp/koukaryoku-dok)」が提供するAPIの利用方法を公開しています。  \n「高火力 DOK」自体の説明については[マニュアル](https://manual.sakura.ad.jp/cloud/manual-koukaryoku-container.html)をご覧ください。\n\n# APIご利用の前に\n\n本APIの利用には、さくらのクラウドの **APIキー** が必要です。  \nAPIキーの発行については[マニュアル](https://manual.sakura.ad.jp/cloud/api/apikey.html)をご覧ください。\n\nAPIキーの「アクセストークン」をユーザーID、「アクセストークンシークレット」をパスワードとした **Basic認証** で本APIをご利用ください。\n\n# Web API Base URL \n\n```\nhttps://secure.sakura.ad.jp/cloud/zone/{ゾーンID}/api/managed-container/1.0\n```\n\nゾーンIDついては[こちら](https://manual.sakura.ad.jp/cloud-api/1.1/) をご覧ください。\n\n# リクエスト例\n\n石狩第一ゾーン(ゾーンID: `is1a`)で、タスク一覧を取得する場合の実行例は下記となります。\n\n```\n$ curl -u \"{アクセストークン}:{アクセストークンシークレット}\" -X GET https://secure.sakura.ad.jp/cloud/zone/is1a/api/managed-container/1.0/tasks/\n```\n\n- - -\n",
     "version": "1.0.0",
     "contact": {
       "name": "SAKURA internet Inc."
@@ -28,8 +28,8 @@
       "description": "認証関連のAPIです。"
     },
     {
-      "name": "コンテナーレジストリー",
-      "description": "コンテナーレジストリーの認証情報に関するAPIです。"
+      "name": "コンテナレジストリー",
+      "description": "コンテナレジストリーの認証情報に関するAPIです。"
     },
     {
       "name": "タスク",
@@ -50,6 +50,10 @@
     {
       "name": "料金",
       "description": "料金および、お支払いに関するAPIです。"
+    },
+    {
+      "name": "通知",
+      "description": "通知設定および通知エンドポイントに関するAPIです。"
     }
   ],
   "paths": {
@@ -151,14 +155,14 @@
     "/registries/": {
       "get": {
         "tags": [
-          "コンテナーレジストリー"
+          "コンテナレジストリー"
         ],
-        "summary": "コンテナーレジストリー認証情報の一覧を取得",
+        "summary": "コンテナレジストリー認証情報の一覧を取得",
         "description": "「認証情報登録API」で登録した認証情報の一覧を取得します。",
         "operationId": "getRegistries",
         "responses": {
           "200": {
-            "description": "登録済みのコンテナーレジストリーの認証情報の一覧",
+            "description": "登録済みのコンテナレジストリーの認証情報の一覧",
             "content": {
               "application/json": {
                 "schema": {
@@ -189,10 +193,10 @@
       },
       "post": {
         "tags": [
-          "コンテナーレジストリー"
+          "コンテナレジストリー"
         ],
-        "summary": "コンテナーレジストリーの認証情報を登録",
-        "description": "認証が必要なコンテナーレジストリーの、認証情報を登録します。\n\nプライベートなレジストリーに格納したコンテナーイメージを実行する場合、事前にこのAPIで認証情報を登録してください。  \n公開レジストリーのイメージを実行する場合は本操作は不要です。\n",
+        "summary": "コンテナレジストリーの認証情報を登録",
+        "description": "認証が必要なコンテナレジストリーの、認証情報を登録します。\n\nプライベートなレジストリーに格納したコンテナイメージを実行する場合、事前にこのAPIで認証情報を登録してください。  \n公開レジストリーのイメージを実行する場合は本操作は不要です。\n",
         "operationId": "addRegistry",
         "requestBody": {
           "content": {
@@ -227,10 +231,10 @@
     "/registries/{registryId}/": {
       "get": {
         "tags": [
-          "コンテナーレジストリー"
+          "コンテナレジストリー"
         ],
-        "summary": "コンテナーレジストリーの認証情報を取得",
-        "description": "指定IDのコンテナーレジストリーの認証情報を取得します。",
+        "summary": "コンテナレジストリーの認証情報を取得",
+        "description": "指定IDのコンテナレジストリーの認証情報を取得します。",
         "operationId": "getRegistry",
         "parameters": [
           {
@@ -262,9 +266,9 @@
       },
       "delete": {
         "tags": [
-          "コンテナーレジストリー"
+          "コンテナレジストリー"
         ],
-        "summary": "コンテナーレジストリーの認証情報を抹消",
+        "summary": "コンテナレジストリーの認証情報を抹消",
         "description": "登録された認証情報を抹消します。  \n本APIの呼び出し後は、同じレジストリーIDは本サービスで使えなくなります。\n",
         "operationId": "deleteRegistry",
         "parameters": [
@@ -290,10 +294,10 @@
       },
       "put": {
         "tags": [
-          "コンテナーレジストリー"
+          "コンテナレジストリー"
         ],
-        "summary": "コンテナーレジストリーの認証情報を更新",
-        "description": "登録済みの認証情報を変更します。  \n登録時に間違えた場合や、コンテナーレジストリーのパスワードを変更した場合などにお使いください。\n",
+        "summary": "コンテナレジストリーの認証情報を更新",
+        "description": "登録済みの認証情報を変更します。  \n登録時に間違えた場合や、コンテナレジストリーのパスワードを変更した場合などにお使いください。\n",
         "operationId": "updateRegistry",
         "parameters": [
           {
@@ -652,7 +656,7 @@
             "schema": {
               "type": "string",
               "example": "output.txt",
-              "description": "指定するとContentDispositionヘッダにファイル名として指定されます"
+              "description": "指定するとContentDispositionヘッダーにファイル名として指定されます"
             }
           }
         ],
@@ -853,7 +857,7 @@
         }
       }
     },
-    "/artifacts/{artifactId}/downlaod/": {
+    "/artifacts/{artifactId}/download/": {
       "get": {
         "tags": [
           "アーティファクト"
@@ -878,7 +882,7 @@
             "schema": {
               "type": "string",
               "example": "artifact.tar.gz",
-              "description": "指定するとContentDispositionヘッダにファイル名として指定されます"
+              "description": "指定するとContentDispositionヘッダーにファイル名として指定されます"
             }
           }
         ],
@@ -1275,6 +1279,592 @@
           }
         }
       }
+    },
+    "/tasks/{taskId}/notification-preference/": {
+      "put": {
+        "tags": [
+          "タスク"
+        ],
+        "summary": "タスク完了通知設定",
+        "description": "タスク完了時の通知設定を行います。\n\n- `is_enabled`: 通知を有効にするかどうか\n- `endpoint_ids`: 通知先のエンドポイントIDのリスト\n\n`is_enabled` が `true` の場合、タスクが完了したときに通知イベントが作成されます。\n",
+        "operationId": "setTaskNotificationPreference",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskNotificationPreferenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "設定成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation Error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/notification/endpoints/": {
+      "get": {
+        "tags": [
+          "通知"
+        ],
+        "summary": "通知エンドポイント一覧取得",
+        "description": "登録済みの通知エンドポイントの一覧を取得します。",
+        "operationId": "getNotificationEndpoints",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "description": "ページ番号（1 origin）",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "description": "1ページのサイズ",
+            "schema": {
+              "type": "integer",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "通知エンドポイントの一覧",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "results"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/PageNumberPaginationMeta"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/NotificationEndpoint"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "通知"
+        ],
+        "summary": "通知エンドポイント登録",
+        "description": "新しい通知エンドポイントを登録します。\n\n現在サポートしているエンドポイントタイプは以下の通りです：\n- `webhook`: Webhook URL\n",
+        "operationId": "createNotificationEndpoint",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNotificationEndpointRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "登録成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationEndpoint"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Validation Error"
+          }
+        }
+      }
+    },
+    "/notification/endpoints/{endpointId}/": {
+      "get": {
+        "tags": [
+          "通知"
+        ],
+        "summary": "通知エンドポイント取得",
+        "description": "指定IDの通知エンドポイントを取得します。",
+        "operationId": "getNotificationEndpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "endpointId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "通知エンドポイント情報",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationEndpoint"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "通知"
+        ],
+        "summary": "通知エンドポイント更新",
+        "description": "通知エンドポイントを更新します。\n",
+        "operationId": "updateNotificationEndpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "endpointId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNotificationEndpointRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationEndpoint"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "通知"
+        ],
+        "summary": "通知エンドポイント削除",
+        "description": "通知エンドポイントを削除します。\n",
+        "operationId": "deleteNotificationEndpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "endpointId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "削除成功"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/notification/settings/": {
+      "get": {
+        "tags": [
+          "通知"
+        ],
+        "summary": "通知設定一覧取得",
+        "description": "登録済みの通知設定の一覧を取得します。",
+        "operationId": "getNotificationSettings",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "description": "ページ番号（1 origin）",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "description": "1ページのサイズ",
+            "schema": {
+              "type": "integer",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "通知設定の一覧",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "results"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/PageNumberPaginationMeta"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/NotificationSetting"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "通知"
+        ],
+        "summary": "通知設定登録",
+        "description": "新しい通知設定を登録します。\n",
+        "operationId": "createNotificationSetting",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNotificationSettingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "登録成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationSetting"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Validation Error"
+          }
+        }
+      }
+    },
+    "/notification/settings/{settingId}/": {
+      "get": {
+        "tags": [
+          "通知"
+        ],
+        "summary": "通知設定取得",
+        "description": "指定IDの通知設定を取得します。",
+        "operationId": "getNotificationSetting",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "settingId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "通知設定情報",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationSetting"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "通知"
+        ],
+        "summary": "通知設定更新",
+        "description": "通知設定を更新します。\n",
+        "operationId": "updateNotificationSetting",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "settingId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNotificationSettingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationSetting"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "通知"
+        ],
+        "summary": "通知設定部分更新",
+        "description": "通知設定を部分的に更新します。\n",
+        "operationId": "partialUpdateNotificationSetting",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "settingId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PartialUpdateNotificationSettingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationSetting"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "通知"
+        ],
+        "summary": "通知設定削除",
+        "description": "通知設定を削除します。\n",
+        "operationId": "deleteNotificationSetting",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "settingId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "削除成功"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/notification/settings/test-webhook/": {
+      "post": {
+        "tags": [
+          "通知"
+        ],
+        "summary": "Webhook通知設定テスト",
+        "description": "登録したWebhook通知設定に対してテスト送信を行います。\n\nこのAPIはブラウザから直接Webhook URLにテスト送信する機能です。\n",
+        "operationId": "testWebhookNotification",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestWebhookRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "テスト送信結果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestWebhookResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "バリデーションエラー、またはWebhook先が非2xxを返した場合",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestWebhookResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "502": {
+            "description": "Bad Gateway (接続エラー)"
+          },
+          "504": {
+            "description": "Gateway Timeout (タイムアウト)"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1354,12 +1944,44 @@
           }
         }
       },
+      "AuthNotificationEndpoint": {
+        "type": "object",
+        "required": [
+          "id",
+          "address"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "address": {
+            "type": "string",
+            "example": "https://example.com/webhook"
+          }
+        }
+      },
+      "AuthNotification": {
+        "type": "object",
+        "required": [
+          "endpoints"
+        ],
+        "properties": {
+          "endpoints": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthNotificationEndpoint"
+            }
+          }
+        }
+      },
       "Auth": {
         "type": "object",
         "required": [
           "user",
           "member",
-          "account"
+          "account",
+          "notification"
         ],
         "properties": {
           "user": {
@@ -1380,6 +2002,9 @@
           },
           "account": {
             "$ref": "#/components/schemas/Account"
+          },
+          "notification": {
+            "$ref": "#/components/schemas/AuthNotification"
           }
         }
       },
@@ -1524,7 +2149,8 @@
           },
           "path": {
             "type": "string",
-            "example": "/"
+            "example": "/",
+            "description": "公開するパス。`/` から始まる文字列で、URLエンコードとして妥当な文字列である必要があります。"
           }
         }
       },
@@ -1583,7 +2209,7 @@
           "registry": {
             "type": "string",
             "format": "uuid",
-            "description": "コンテナレジストリ認証情報",
+            "description": "コンテナレジストリー認証情報",
             "nullable": true
           },
           "command": {
@@ -1671,7 +2297,7 @@
           "id",
           "task",
           "created_at",
-          "deleted_at",
+          "updated_at",
           "filename",
           "size_bytes"
         ],
@@ -1687,7 +2313,7 @@
           "created_at": {
             "$ref": "#/components/schemas/DateTime"
           },
-          "deleted_at": {
+          "updated_at": {
             "$ref": "#/components/schemas/DateTime"
           },
           "filename": {
@@ -1789,7 +2415,7 @@
           "registry": {
             "type": "string",
             "format": "uuid",
-            "description": "コンテナレジストリ認証情報",
+            "description": "コンテナレジストリー認証情報",
             "nullable": true
           },
           "command": {
@@ -1815,6 +2441,7 @@
           },
           "environment": {
             "type": "object",
+            "description": "環境変数のキーと値のマップ。キーと値の合計文字数が8192文字未満である必要があります。",
             "properties": {
               "additionalProperties": {
                 "type": "string"
@@ -1876,7 +2503,10 @@
           "execution_time_limit_sec": {
             "type": "integer",
             "nullable": true,
-            "default": null
+            "default": null,
+            "minimum": 600,
+            "maximum": 1728000,
+            "description": "タスクの実行時間上限（秒）。600以上1728000以下（20日）で指定します。nullの場合は上限なしとして扱います。"
           }
         }
       },
@@ -2040,6 +2670,269 @@
           }
         }
       },
+      "TaskNotificationPreferenceRequest": {
+        "type": "object",
+        "properties": {
+          "is_enabled": {
+            "type": "boolean",
+            "description": "通知を有効にするかどうか",
+            "example": true
+          },
+          "endpoint_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "通知先のエンドポイントIDのリスト",
+            "example": [
+              "123e4567-e89b-12d3-a456-426614174000"
+            ]
+          }
+        }
+      },
+      "NotificationEndpoint": {
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "endpoint_type",
+          "address",
+          "is_verified"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/DateTime"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/DateTime"
+          },
+          "endpoint_type": {
+            "type": "string",
+            "enum": [
+              "webhook"
+            ],
+            "description": "エンドポイントの種類",
+            "example": "webhook"
+          },
+          "address": {
+            "type": "string",
+            "description": "Webhook URL またはメールアドレス",
+            "example": "https://example.com/webhook"
+          },
+          "is_verified": {
+            "type": "boolean",
+            "description": "エンドポイントが検証済みかどうか",
+            "example": true
+          }
+        }
+      },
+      "CreateNotificationEndpointRequest": {
+        "type": "object",
+        "required": [
+          "endpoint_type",
+          "address"
+        ],
+        "properties": {
+          "endpoint_type": {
+            "type": "string",
+            "enum": [
+              "webhook"
+            ],
+            "description": "エンドポイントの種類",
+            "example": "webhook"
+          },
+          "address": {
+            "type": "string",
+            "description": "Webhook URL またはメールアドレス",
+            "example": "https://example.com/webhook"
+          }
+        }
+      },
+      "UpdateNotificationEndpointRequest": {
+        "type": "object",
+        "properties": {
+          "endpoint_type": {
+            "type": "string",
+            "enum": [
+              "webhook"
+            ],
+            "description": "エンドポイントの種類",
+            "example": "webhook"
+          },
+          "address": {
+            "type": "string",
+            "description": "Webhook URL またはメールアドレス",
+            "example": "https://example.com/webhook"
+          }
+        }
+      },
+      "NotificationSetting": {
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "event_type",
+          "is_enabled",
+          "endpoints"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/DateTime"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/DateTime"
+          },
+          "event_type": {
+            "type": "string",
+            "description": "通知イベントの種類",
+            "example": "task_completed"
+          },
+          "is_enabled": {
+            "type": "boolean",
+            "description": "通知設定が有効かどうか",
+            "example": true
+          },
+          "endpoints": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationEndpoint"
+            },
+            "description": "通知先のエンドポイントリスト"
+          }
+        }
+      },
+      "CreateNotificationSettingRequest": {
+        "type": "object",
+        "required": [
+          "event_type",
+          "is_enabled",
+          "endpoint_ids"
+        ],
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "description": "通知イベントの種類",
+            "example": "task_completed"
+          },
+          "is_enabled": {
+            "type": "boolean",
+            "description": "通知設定を有効にするかどうか",
+            "example": true
+          },
+          "endpoint_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "通知先のエンドポイントIDのリスト",
+            "example": [
+              "123e4567-e89b-12d3-a456-426614174000"
+            ]
+          }
+        }
+      },
+      "UpdateNotificationSettingRequest": {
+        "type": "object",
+        "required": [
+          "event_type",
+          "is_enabled",
+          "endpoint_ids"
+        ],
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "description": "通知イベントの種類",
+            "example": "task_completed"
+          },
+          "is_enabled": {
+            "type": "boolean",
+            "description": "通知設定を有効にするかどうか",
+            "example": true
+          },
+          "endpoint_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "通知先のエンドポイントIDのリスト",
+            "example": [
+              "123e4567-e89b-12d3-a456-426614174000"
+            ]
+          }
+        }
+      },
+      "PartialUpdateNotificationSettingRequest": {
+        "type": "object",
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "description": "通知イベントの種類",
+            "example": "task_completed"
+          },
+          "is_enabled": {
+            "type": "boolean",
+            "description": "通知設定を有効にするかどうか",
+            "example": true
+          },
+          "endpoint_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "通知先のエンドポイントIDのリスト",
+            "example": [
+              "123e4567-e89b-12d3-a456-426614174000"
+            ]
+          }
+        }
+      },
+      "TestWebhookRequest": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "テスト送信先のWebhook URL",
+            "example": "https://example.com/webhook"
+          }
+        }
+      },
+      "TestWebhookResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "description": "テスト送信が成功したかどうか",
+            "example": true
+          },
+          "webhook_status_code": {
+            "type": "integer",
+            "description": "Webhook先から返されたHTTPステータスコード",
+            "example": 200
+          },
+          "response_body": {
+            "type": "string",
+            "description": "レスポンスボディ（長すぎる場合は切り詰められる）",
+            "example": "{\"status\": \"ok\"}"
+          }
+        }
+      },
       "StartCondition": {
         "type": "object",
         "required": [
@@ -2052,7 +2945,9 @@
             "example": "Task 001"
           },
           "exit_code": {
-            "type": "integer"
+            "type": "integer",
+            "nullable": true,
+            "description": "タスクの終了コード。null を指定した場合、タスクの終了コードによる条件なしと扱います。"
           }
         }
       },
