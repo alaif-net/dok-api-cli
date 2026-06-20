@@ -7,12 +7,13 @@ from pydantic import BaseModel, ConfigDict
 
 class NotificationEndpoint(BaseModel):
     model_config = ConfigDict(extra="allow")
-    id: str
+    id: int
     created_at: str
     updated_at: str
     endpoint_type: str
     address: str
     is_verified: bool
+    secret: Optional[str] = None
 
 
 class CreateNotificationEndpointRequest(BaseModel):
@@ -38,24 +39,24 @@ class NotificationSetting(BaseModel):
 class CreateNotificationSettingRequest(BaseModel):
     event_type: str
     is_enabled: bool
-    endpoint_ids: list[str]
+    endpoint_ids: list[int]
 
 
 class UpdateNotificationSettingRequest(BaseModel):
     event_type: str
     is_enabled: bool
-    endpoint_ids: list[str]
+    endpoint_ids: list[int]
 
 
 class PartialUpdateNotificationSettingRequest(BaseModel):
     event_type: Optional[str] = None
     is_enabled: Optional[bool] = None
-    endpoint_ids: Optional[list[str]] = None
+    endpoint_ids: Optional[list[int]] = None
 
 
 class TaskNotificationPreferenceRequest(BaseModel):
     is_enabled: Optional[bool] = None
-    endpoint_ids: Optional[list[str]] = None
+    endpoint_ids: Optional[list[int]] = None
 
 
 class TestWebhookRequest(BaseModel):

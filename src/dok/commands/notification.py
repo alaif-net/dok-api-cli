@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Annotated, Optional
+from typing import Annotated, Any, Optional
 
 import typer
 
@@ -126,6 +126,28 @@ def endpoint_update(
         typer.echo(f"更新しました: {data['id']}")
 
 
+@endpoint_app.command("patch")
+def endpoint_patch(
+    ctx: typer.Context,
+    endpoint_id: Annotated[str, typer.Argument(help="エンドポイントID")],
+    endpoint_type: Annotated[Optional[str], typer.Option("--type", help="エンドポイント種別 (webhook)")] = None,
+    address: Annotated[Optional[str], typer.Option("--address", help="Webhook URL")] = None,
+) -> None:
+    """通知エンドポイントを部分更新する。"""
+    client = get_client(ctx)
+    fmt: str = ctx.obj["output"]
+    body: dict[str, Any] = {}
+    if endpoint_type is not None:
+        body["endpoint_type"] = endpoint_type
+    if address is not None:
+        body["address"] = address
+    data = client.patch(f"/notification/endpoints/{endpoint_id}/", json=body)
+    if fmt == "json":
+        output.print_json(data)
+    else:
+        typer.echo(f"更新しました: {data['id']}")
+
+
 @endpoint_app.command("delete")
 def endpoint_delete(
     ctx: typer.Context,
@@ -196,7 +218,7 @@ def setting_show(
 def setting_create(
     ctx: typer.Context,
     event_type: Annotated[str, typer.Option("--event-type", help="通知イベント種別 (例: task_completed)")],
-    endpoint_ids: Annotated[Optional[list[str]], typer.Option("--endpoint-id", help="通知先エンドポイントID (複数指定可)")] = None,
+    endpoint_ids: Annotated[Optional[list[int]], typer.Option("--endpoint-id", help="通知先エンドポイントID (複数指定可)")] = None,
     enabled: Annotated[bool, typer.Option("--enabled/--disabled", help="通知設定を有効にするかどうか")] = True,
 ) -> None:
     """通知設定を登録する。"""
@@ -221,7 +243,7 @@ def setting_update(
     ctx: typer.Context,
     setting_id: Annotated[str, typer.Argument(help="通知設定ID")],
     event_type: Annotated[str, typer.Option("--event-type", help="通知イベント種別")],
-    endpoint_ids: Annotated[Optional[list[str]], typer.Option("--endpoint-id", help="通知先エンドポイントID (複数指定可)")] = None,
+    endpoint_ids: Annotated[Optional[list[int]], typer.Option("--endpoint-id", help="通知先エンドポイントID (複数指定可)")] = None,
     enabled: Annotated[bool, typer.Option("--enabled/--disabled", help="通知設定を有効にするかどうか")] = True,
 ) -> None:
     """通知設定を更新する（全フィールド置換）。"""
@@ -246,7 +268,7 @@ def setting_patch(
     ctx: typer.Context,
     setting_id: Annotated[str, typer.Argument(help="通知設定ID")],
     event_type: Annotated[Optional[str], typer.Option("--event-type", help="通知イベント種別")] = None,
-    endpoint_ids: Annotated[Optional[list[str]], typer.Option("--endpoint-id", help="通知先エンドポイントID (複数指定可)")] = None,
+    endpoint_ids: Annotated[Optional[list[int]], typer.Option("--endpoint-id", help="通知先エンドポイントID (複数指定可)")] = None,
     enabled: Annotated[Optional[bool], typer.Option("--enabled/--disabled", help="通知設定を有効にするかどうか")] = None,
 ) -> None:
     """通知設定を部分更新する。"""
