@@ -191,8 +191,11 @@ dok notification endpoint show <endpoint-id>
 # 登録（Webhook URL）
 dok notification endpoint create --address https://example.com/webhook
 
-# 更新
+# 更新（全フィールド置換）
 dok notification endpoint update <endpoint-id> --address https://example.com/new-webhook
+
+# 部分更新
+dok notification endpoint patch <endpoint-id> --address https://example.com/new-webhook
 
 # 削除
 dok notification endpoint delete <endpoint-id>
