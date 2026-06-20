@@ -74,9 +74,10 @@ class Artifact(BaseModel):
     id: str
     task: str
     created_at: str
-    deleted_at: Optional[str] = None
+    updated_at: str
     filename: str
     size_bytes: int
+    url: Optional[str] = None
 
 
 class Task(BaseModel):
