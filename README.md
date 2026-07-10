@@ -101,6 +101,14 @@ dok task create \
   --env MODEL_PATH=/data/model.pt \
   --tag experiment
 
+# 実行時間制限を指定（秒）
+dok task create --name my-task --image alpine:latest --plan v100-32gb \
+  --execution-time-limit 3600
+
+# 実行時間を無制限にする
+dok task create --name my-task --image alpine:latest --plan v100-32gb \
+  --unlimited
+
 # キャンセル・削除
 dok task cancel <task-id>
 dok task delete <task-id>

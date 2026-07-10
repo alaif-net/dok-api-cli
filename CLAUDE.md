@@ -10,6 +10,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - API Base URL: `https://secure.sakura.ad.jp/cloud/zone/is1a/api/managed-container/1.0`
 - 認証: Basic認証（アクセストークン=ユーザーID、アクセストークンシークレット=パスワード）
 
+## 作業ルール
+
+- CLIのオプション・サブコマンド・引数など、ユーザーが直接使うインターフェースを変更・追加した場合は、`README.md` も合わせて更新すること。
+
 ## コマンド
 
 ```bash
