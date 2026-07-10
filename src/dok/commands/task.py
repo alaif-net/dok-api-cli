@@ -119,6 +119,7 @@ def create(
     http_port: Annotated[Optional[int], typer.Option("--http-port", help="HTTPポート番号")] = None,
     http_path: Annotated[Optional[str], typer.Option("--http-path", help="HTTPパス")] = None,
     execution_time_limit: Annotated[Optional[int], typer.Option("--execution-time-limit", help="実行時間制限(秒)")] = None,
+    unlimited: Annotated[bool, typer.Option("--unlimited", help="実行時間を無制限にする (execution_time_limit_sec=null)")] = False,
 ) -> None:
     """タスクを作成する。-f でJSONファイルを指定するか、オプションで指定する。"""
     client = get_client(ctx)
@@ -170,7 +171,9 @@ def create(
             "containers": [container],
             "tags": tag or [],
         }
-        if execution_time_limit is not None:
+        if unlimited:
+            body["execution_time_limit_sec"] = None
+        elif execution_time_limit is not None:
             body["execution_time_limit_sec"] = execution_time_limit
 
     data = client.post("/tasks/", json=body)
